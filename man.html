@@ -4,39 +4,40 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 
-	<title>Passh: a simple password store</title>
+	<title>Passh: manual</title>
 	<meta name="author" content="Iv&aacute;n A. Barrera Oro" />
-	<meta name="description" content="Passh: a simple password store" />
+	<meta name="description" content="Passh: a simple password store manual page" />
 
 	<link rel="icon" href="img/logo.png" sizes="512x512" type="image/png" />
 
 	<link href="css/bootstrap.min.css" rel="stylesheet" />
 	<link href="css/cover.min.css" rel="stylesheet" />
 	<link href="css/custom.min.css" rel="stylesheet" />
+	<link href="css/man.min.css" rel="stylesheet" />
 
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 
 	<meta name="twitter:card" content="summary" />
 	<meta name="twitter:site" content="@hackancuba" />
 	<meta name="twitter:title" content="Passh" />
-	<meta name="twitter:description" content="A simple password store" />
+	<meta name="twitter:description" content="A simple password store manual page" />
 	<meta name="twitter:image" content="img/logo.png" />
 
 	<meta property="og:title" content="Passh" />
-	<meta property="og:description" content="A simple password store" />
+	<meta property="og:description" content="A simple password store manual page" />
 	<meta property="og:locale" content="en_GB" />
 </head>
 <body>
 	<div class="site-wrapper">
 		<div class="site-wrapper-inner">
 			<div class="cover-container">
-				<div class="masthead clearfix">
+				<div class="masthead clearfix man-bg">
 					<div class="inner">
 						<a href="https://hackan.net" title="HacKan dot net"><img class="masthead-brand" src="img/title.png" width="166" height="68" alt="HacKan Logo"/></a>
 						<nav>
 							<ul class="nav masthead-nav">
-								<li class="active"><a href="#" title="Home"><span class="glyphicon glyphicon-home" aria-hidden="true"></span></a></li>
-								<li><a href="/man.html" title="Manual"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></li>
+								<li><a href="/index.html" title="Home"><span class="glyphicon glyphicon-home" aria-hidden="true"></span></a></li>
+								<li class="active"><a href="#" title="Manual"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></li>
 								<li><a href="https://github.com/hackancuba/passh" title="Get the source!"><span class="glyphicon glyphicon-cloud" aria-hidden="true"></span></a></li>
 								<li><a href="https://flattr.com/profile/hackan" title="Flattr me"><span class="glyphicon glyphicon-heart-empty" aria-hidden="true"></span></a></li>
 							</ul>
@@ -44,20 +45,9 @@
 					</div>
 				</div>
 
-				<div class="inner cover">
-					<h1 class="cover-heading">Passh: a simple password store</h1>
-					<p class="lead">A password store from the command line based on GPG to encrypt and authenticate stored passwords, and git to track changes. It's a fork from <a href="https://passwordstore.org" title="Pass">Pass</a> which aims to improve it a bit, while keeping its core intact.</p>
-					<p><a href="https://github.com/hackancuba/passh/releases/tag/v1.9.6-rc%2B20170207" title="Passh latest release" class="btn btn-default btn-lg btn-block">Get the latest release</a></p>
-					<p>Always install from <a href="https://github.com/hackancuba/passh/releases" title="Passh releases" class="link-shadow">releases</a> because those are signed.</p>
-				</div>
-				<br />
-				<div class="inner cover">
-					<h2 class="cover-heading">What does Passh have that Pass doesn't?</h2>
-					<p class="lead">Mainly, it handles extensions in a better way. It allows extensions to override commands, so i.e. you can have an extension to replace the <a href="https://github.com/hackancuba/passh-extension-insert" title="Insert: Passh extension"><code>insert</code></a> command.<br/>It's <em>100% compatible</em> and <em>can coexist</em> with Pass, using the same store and extensions, since extensions for Pass are compatible with Passh, and the other way around (some Passh extensions can't be used with Pass but they pose no problem at all).</p>
-					<p>But that's not all, so <a href="https://github.com/hackancuba/passh#changes-from-pass-master" title="Changes from Pass" class="link-shadow">check the changes list</a> to know more.</p>
-				</div>
+				<div id="man">Getting the manual, please wait...</div>
 
-				<div class="mastfoot">
+				<div class="mastfoot man-bg">
 					<div class="inner">
 						<p>Cover template for <a href="https://getbootstrap.com">Bootstrap</a>, by <a href="https://twitter.com/mdo">@mdo</a>. Uses pretty <a href="https://glyphicons.com/">Glyphicons</a>. <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/"><img src="https://licensebuttons.net/l/by-nc-sa/4.0/80x15.png" width="80" height="15" alt="CC BY-NC-SA 4.0"/></a>. Hosted generously by <a href="https://github.com/hackancuba/passh/blob/gh-pages" target="_blank">Github</a>.</p>
 					</div>
@@ -69,6 +59,11 @@
 		src="https://code.jquery.com/jquery-3.1.1.min.js"
 		integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
 		crossorigin="anonymous"></script>
+	<script
+		src="https://cdn.rawgit.com/showdownjs/showdown/1.6.3/dist/showdown.min.js"
+		integrity="sha256-SZnITKFJXLFRes1mO7uWi2CVchF1L3l0AHT/LQ+gcew="
+		crossorigin="anonymous"></script>
 	<script src="js/bootstrap.min.js"></script>
+	<script src="js/getmanual.min.js"></script>
 </body>
 </html>

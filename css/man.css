@@ -1,0 +1,14 @@
+.site-wrapper {
+    box-shadow: none;
+    webkit-box-shadow: none;
+}
+
+#man {
+	margin-top: 125px;
+	margin-bottom: 115px;
+	text-align: left;
+}
+
+.man-bg {
+	background-color: #333;
+}
