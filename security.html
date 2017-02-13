@@ -48,27 +48,7 @@
 
 				<div class="post-begin"></div>
 
-				<div class="inner cover">
-					<h1 class="cover-heading">Security notes on Passh</h1>
-					<p class="lead">Some notes about security and secure practices with Passh. If you have questions or sugestions, please write an <a href="https://www.google.com/recaptcha/mailhide/d?k=01bt-LqbeJUffVVpvkr-XGtQ==&c=FkaqHW50ArpN6q7yFv1yASHVeJHBBpcEZj3SJvj0jVQ=">e-mail</a> or open an <a href="https://github.com/hackancuba/passh/issues">issue</a>.</p>
-				</div>
-
-				<div class="inner cover">
-					<h2 class="cover-heading">Encryption</h2>
-					<p class="lead">Passh's security is based on GPG. Passwords and files inserted into the storage are GPG encrypted, using parameters defined in the user's key configuration. This behavior can be modified by enviroment variable <a href="/man.html#environment-variables"><code>PASSWORD_STORE_GPG_OPTS</code></a>, where options set there are passed directly to GPG.</p>
-					<p>I.E.: <code>PASSWORD_STORE_GPG_OPTS="--cipher-algo AES256 --digest-algo SHA512"</code></p>
-				</div>
-
-				<div class="inner cover">
-					<h2 class="cover-heading">Authentication</h2>
-					<p class="lead">Authentication is used by signing <em>.gpg-id</em> file, extension files and (optionally) git commits. To enable authentication, the enviroment variable <a href="/man.html#environment-variables"><code>PASSWORD_STORE_SIGNING_KEY</code></a> must be set to the 40 hex-digit GPG key fingerprint used to sign (probably the same one used to encrypt).</p>
-					<p>I.E.: <code>PASSWORD_STORE_SIGNING_KEY=5D05EA ... 560BEABA</code></p>
-				</div>
-
-				<div class="inner cover">
-					<h2 class="cover-heading">Storage model</h2>
-					<p class="lead">The storage model is plain, so when you insert a password in, say, Webs/Facebook, a file is created in ~/.password-store/Webs/Facebook.gpg. This leaks meta data regarding user's sites and similar, so users must be very careful not publishing their storage. If git is used remotely, use a private git repository (gitlab is a good choice).</p>
-				</div>
+				<div id="security" class="inner cover">Getting security notes, please wait...</div>
 
 				<div class="post-end"></div>
 
@@ -80,6 +60,15 @@
 			</div>
 		</div>
 	</div>
-	<script src="js/bootstrap.min.js"></script>
+	<script
+        src="https://code.jquery.com/jquery-3.1.1.min.js"
+        integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+        crossorigin="anonymous"></script>
+    <script
+        src="https://cdn.rawgit.com/showdownjs/showdown/1.6.3/dist/showdown.min.js"
+        integrity="sha256-SZnITKFJXLFRes1mO7uWi2CVchF1L3l0AHT/LQ+gcew="
+        crossorigin="anonymous"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/getsecurity.min.js"></script>
 </body>
 </html>
