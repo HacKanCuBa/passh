@@ -17,6 +17,7 @@
 
 .bg {
 	background-color: #333;
+    z-index: 1;
 }
 
 .post a {
