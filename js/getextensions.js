@@ -1,3 +1,3 @@
 window.onload = function() {
-	getMD2HTML("#extensions", "https://cdn.rawgit.com/HacKanCuBa/passh/2563a1dbadc48df0dda2f27dbbce01eb4abdca85/EXTENSIONS.md");
+	getMD2HTML("#extensions", "https://cdn.rawgit.com/HacKanCuBa/passh/da22255a2a948e228030234f8b9afdc340a548dc/EXTENSIONS.md");
 }
