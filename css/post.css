@@ -3,6 +3,10 @@
     webkit-box-shadow: none;
 }
 
+pre {
+    text-align: left;
+}
+
 @media (min-width: 768px) {
     .post-begin {
         margin-top: 100px;
