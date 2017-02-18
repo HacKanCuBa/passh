@@ -36,3 +36,6 @@ nav {
     text-align: right;
 }
 
+img {
+    max-width: 100%;
+}
