@@ -4,13 +4,13 @@ Pass is a simple password store. This fork changes a few things while trying to 
 
 Forked from https://git.zx2c4.com/password-store.
 
-### About
+## About
 
 This is a very simple password store that encrypts passwords using gpg and
 places the encrypted password in a directory. It can generate new passwords
 and keep track of old ones.
 
-Please see the [man page](https://github.com/HacKanCuBa/passh/blob/master/man/pass.md) for documentation and examples: `man passh`
+Please see the [man page](https://github.com/HacKanCuBa/passh/blob/master/man/passh.md) for documentation and examples: `man passh`.
 
 Depends on:
 - bash
@@ -33,38 +33,78 @@ The original project page is: https://www.passwordstore.org/
 
 ### Installing
 
-Currently, you need to clone this repo and install it manually:
+Check install guide in **[latest release](https://github.com/HacKanCuBa/passh/releases/latest)**.
 
-        git clone https://github.com/HacKanCuBa/passh.git
-        cd passh
-        sudo make install
+You can use **passh** along with **pass** without inconvenient, and have them both installed at the same time. They both use the same password store and extensions, so you can switch from one to the other. Do note, however, that some passh extensions can't be executed by pass, but every pass extension is executable by passh.
 
-You can use it along with **pass** without inconvenient, and have them both installed at the same time. They both use the same password store and extensions, so you can switch from one to the other.
+#### Install bleeding-edge
 
-Do note however that some passh extensions can't be executed by pass, but every pass extension is executable by passh.
+Always prefer downloading [releases](https://github.com/HacKanCuBa/passh/releases), since those are signed and verified to work. However, if you want the bleeding-edge version, clone or download this repo and run `make install` as a privileged user:
+
+    wget https://github.com/hackancuba/passh/archive/master.zip
+    unzip master.zip
+    cd passh-master
+    make test && sudo make install
+
+It's a good practice to run `make test` prior installing, to be sure that passh is working correctly.
+
+If you don't want to `sudo make install`, you can simply copy `src/password-store.sh` to `/usr/bin/passh`. Optionally, check completion helpers in `src/completion` and man page at `man/passh.1`
+
+### Uninstalling
+
+Go to the same directory from where it was installed, or download the same release, and run `sudo make uninstall`:
+
+    cd passh
+    sudo make uninstall
+
+### Testing
+
+Clone the git repo or download latest release and run `make test` inside the directory:
+
+    cd passh
+    make test
 
 ## Extensions
 
-Some extensions I wrote and/or recommend.
+A [curated list](https://github.com/HacKanCuBa/passh/blob/master/EXTENSIONS.md) of some extensions I wrote and/or recommend.
 
-### Passh
+## Security notes
 
-* [insert](https://github.com/HacKanCuBa/passh-extension-insert): provides a convenient solution to insert a file or password into the store, overriding native insert command.
-* [init](https://github.com/HacKanCuBa/passh-extension-init): provides a convenient solution to init the store along with its git repo, overriding native init command.
+Check the [security notes](https://github.com/HacKanCuBa/passh/blob/master/SECURITY.md) on Passh.
 
-### Pass
+## Navigating this repo
 
-* [insertfile](https://github.com/HacKanCuBa/pass-extension-insertfile): provides a convenient solution to insert a file into the store.
-* [initgit](https://github.com/HacKanCuBa/pass-extension-initgit): provides a convenient solution to init the store along with its git repo.
+### [contrib](https://github.com/HacKanCuBa/passh/tree/master/contrib)
+
+Scripts like menus, importers to import data from other passwords managers and stuff contributed to the pass project.
+
+### [man](https://github.com/HacKanCuBa/passh/tree/master/man)
+
+The man page and a [markdown version](https://github.com/HacKanCuBa/passh/blob/master/man/passh.md) for online viewing.
+
+### [src](https://github.com/HacKanCuBa/passh/tree/master/src)
+
+Passh source code (password-store.sh) and some helper scripts like completion and platform adapt.
+
+### [tests](https://github.com/HacKanCuBa/passh/tree/master/tests)
+
+Test files based on [Sharness](https://github.com/chriscool/sharness), they are named like `tNNNN-description.sh`. Simply run them individually, through `run-all-tests` script or `make test` from the main directory as explained [above](#testing).
 
 ## Development
 
-Currently working on branch [improve-extensions-support](https://github.com/HacKanCuBa/passh/tree/improve-extensions-support).
+### Contributing
 
-Ongoing changes from [pass-master](https://github.com/HacKanCuBa/passh/tree/pass-master), where main **pass** development is pulled:
+Read the [Developers](DEVELOPERS.md) section.
 
-* Modified the way commands are interpreted in the script: replaced a switch case selection to a more flexible eval'd one.
-* Changed how extensions are handled: now extensions are loaded first, before iterpreting the command as an internal command. This allows extensions to override internal command. A helper function is provided so that an overrided function can still be called from the extension.
+Since I pull changes done to pass, you might want to start [contributing there](https://www.passwordstore.org). Otherwise, you are very welcome to write an issue here, or fork and then do a pull request.
+
+### Changes from pass-master
+
+Rough changes from [pass-master](https://github.com/HacKanCuBa/passh/tree/pass-master), where main **pass** development is pulled:
+
+* Rebranded pass to passh.
+* Modified the way commands are interpreted in the script: replaced the switch case selection to a more flexible eval'd one.
+* Changed how extensions are handled: now extensions are loaded first, before interpreting the command as an internal command. This allows extensions to override internal commands. A helper function is provided so that an overridden function can still be called from the extension.
 * Issuing help command now shows help from the extensions if they implement a function named help_{extension name}(). Otherwise, it will list enabled extensions as commands.
 
 ## License
