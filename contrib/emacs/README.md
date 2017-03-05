@@ -1,13 +1,13 @@
 # Emacs password-store
 
-This package provides functions for working with pass ("the standard
+This package provides functions for working with passh ("the standard
 Unix password manager").
 
-http://www.zx2c4.com/projects/password-store
+http://passh.hackan.net
 
 ## Setup
 
-The pass application must be installed and set up. See the pass
+The passh application must be installed and set up. See the passh
 website for instructions
 
 ## Example usage

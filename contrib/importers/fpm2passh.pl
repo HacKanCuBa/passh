@@ -42,7 +42,7 @@ for (@{$doc->{PasswordList}{PasswordItem}}) {
     $_->{notes} =~ s/\n/\n /g;
     $contents .= "notes:\n $_->{notes}\n";
   }
-  my $cmd = "pass insert -f -m $name";
+  my $cmd = "passh insert -f -m $name";
   my $pid = open(my $fh, "| $cmd") or die "Couldn't fork: $!\n";
   print $fh $contents;
   close $fh;

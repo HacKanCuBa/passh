@@ -24,7 +24,7 @@ from xml.etree import ElementTree
 
 def pass_import_entry(path, data):
     """ Import new password entry to password-store using pass insert command """
-    proc = Popen(['pass', 'insert', '--multiline', path], stdin=PIPE, stdout=PIPE)
+    proc = Popen(['passh', 'insert', '--multiline', path], stdin=PIPE, stdout=PIPE)
     proc.communicate(data.encode('utf8'))
     proc.wait()
     

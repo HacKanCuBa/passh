@@ -25,6 +25,6 @@ cat "$export" | while read uuid group name login passwd notes; do
      test -n "$group" && entry="${entry}group: $group\n"
 
      echo Adding entry for $name:
-     echo -e $entry | pass insert --multiline --force "$name"
+     echo -e $entry | passh insert --multiline --force "$name"
      test $? && echo "Added!"
 done

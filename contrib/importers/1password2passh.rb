@@ -133,7 +133,7 @@ puts "Read #{passwords.length} passwords."
 errors = []
 # Save the passwords
 passwords.each do |pass|
-  IO.popen("pass insert #{"-f " if options.force}-m \"#{pass[:name]}\" > /dev/null", "w") do |io|
+  IO.popen("passh insert #{"-f " if options.force}-m \"#{pass[:name]}\" > /dev/null", "w") do |io|
     io.puts pass[:password]
     if options.meta
       io.puts "login: #{pass[:login]}" unless pass[:login].to_s.empty?

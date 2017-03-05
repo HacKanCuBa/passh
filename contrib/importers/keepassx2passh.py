@@ -59,8 +59,8 @@ def password_data(element):
 def import_entry(element, path=''):
     """ Import new password entry to password-store using pass insert
     command """
-    print("Importing " + path_for(element, path))
-    proc = Popen(['pass', 'insert', '--multiline', '--force',
+    print "Importing " + path_for(element, path)
+    proc = Popen(['passh', 'insert', '--multiline', '--force',
                   path_for(element, path)],
                   stdin=PIPE, stdout=PIPE)
     proc.communicate(password_data(element).encode())

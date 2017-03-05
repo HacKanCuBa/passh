@@ -78,7 +78,7 @@ def password_data(element):
 def import_entry(element, path=None, verbose=0):
     """ Import new password entry to password-store using pass insert
     command """
-    cmd = ['pass', 'insert', '--multiline', '--force', path_for(element, path)]
+    cmd = ['passh', 'insert', '--multiline', '--force', path_for(element, path)]
     if verbose:
         print 'cmd:\n ' + ' '.join(cmd)
     proc = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=STDOUT)

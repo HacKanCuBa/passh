@@ -5,7 +5,7 @@ cd "$(dirname "$0")"
 . ./setup.sh
 
 test_expect_success 'Make sure we can run pass' '
-	"$PASS" --help | grep "pass: the standard unix password manager"
+	"$PASS" --help | grep "the standard unix password manager"
 '
 
 test_expect_success 'Make sure we can initialize our test store' '

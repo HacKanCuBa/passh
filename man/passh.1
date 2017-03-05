@@ -1,10 +1,10 @@
-.TH PASS 1 "2014 March 18" ZX2C4 "Password Store"
+.TH PASSH 1 "2017 February 3" HCCO "Password Store"
 
 .SH NAME
-pass - stores, retrieves, generates, and synchronizes passwords securely
+passh - stores, retrieves, generates, and synchronizes passwords securely
 
 .SH SYNOPSIS
-.B pass
+.B passh
 [ 
 .I COMMAND
 ] [ 
@@ -15,13 +15,19 @@ pass - stores, retrieves, generates, and synchronizes passwords securely
 
 .SH DESCRIPTION
 
-.B pass 
+.B passh 
 is a very simple password store that keeps passwords inside 
 .BR gpg2 (1)
 encrypted files inside a simple directory tree residing at 
 .IR ~/.password-store .
+It's a fork from 
+.B
+.UR https://www.passwordstore.org
+pass
+.UE
+and it's 100% compatible, so both can be used at the same time for the same password store.
 The
-.B pass
+.B passh
 utility provides a series of commands for manipulating the password store,
 allowing the user to add, remove, edit, synchronize, generate, and manipulate
 passwords.
@@ -167,7 +173,7 @@ in addition to initializing the git repository, add the current contents of the 
 store to the repository in an initial commit. If the git config key \fIpass.signcommits\fP
 is set to \fItrue\fP, then all commits will be signed using \fIuser.signingkey\fP or the
 default git signing key. This config key may be turned on using:
-.B `pass git config --bool --add pass.signcommits true`
+.B `passh git config --bool --add pass.signcommits true`
 .TP
 \fBhelp\fP
 Show usage message.
@@ -179,14 +185,14 @@ Show version information.
 
 .TP
 Initialize password store
-.B zx2c4@laptop ~ $ pass init Jason@zx2c4.com 
+.B zx2c4@laptop ~ $ passh init Jason@zx2c4.com 
 .br
 mkdir: created directory \[u2018]/home/zx2c4/.password-store\[u2019] 
 .br
 Password store initialized for Jason@zx2c4.com.
 .TP
 List existing passwords in store
-.B zx2c4@laptop ~ $ pass 
+.B zx2c4@laptop ~ $ passh 
 .br
 Password Store
 .br
@@ -212,10 +218,10 @@ Password Store
 .br
 
 .br
-Alternatively, "\fBpass ls\fP".
+Alternatively, "\fBpassh ls\fP".
 .TP
 Find existing passwords in store that match .com
-.B zx2c4@laptop ~ $ pass find .com
+.B zx2c4@laptop ~ $ passh find .com
 .br
 Search Terms: .com
 .br
@@ -231,25 +237,25 @@ Search Terms: .com
 .br
 
 .br
-Alternatively, "\fBpass search .com\fP".
+Alternatively, "\fBpassh search .com\fP".
 .TP
 Show existing password
-.B zx2c4@laptop ~ $ pass Email/zx2c4.com 
+.B zx2c4@laptop ~ $ passh Email/zx2c4.com 
 .br
 sup3rh4x3rizmynam3 
 .TP
 Copy existing password to clipboard
-.B zx2c4@laptop ~ $ pass -c Email/zx2c4.com 
+.B zx2c4@laptop ~ $ passh -c Email/zx2c4.com 
 .br
 Copied Email/jason@zx2c4.com to clipboard. Will clear in 45 seconds.
 .TP
 Add password to store
-.B zx2c4@laptop ~ $ pass insert Business/cheese-whiz-factory 
+.B zx2c4@laptop ~ $ passh insert Business/cheese-whiz-factory 
 .br
 Enter password for Business/cheese-whiz-factory: omg so much cheese what am i gonna do
 .TP
 Add multiline password to store 
-.B zx2c4@laptop ~ $ pass insert -m Business/cheese-whiz-factory 
+.B zx2c4@laptop ~ $ passh insert -m Business/cheese-whiz-factory 
 .br
 Enter contents of Business/cheese-whiz-factory and press Ctrl+D when finished: 
 .br
@@ -268,43 +274,43 @@ passworrrrrrrrd.
 ^D 
 .TP
 Generate new password
-.B zx2c4@laptop ~ $ pass generate Email/jasondonenfeld.com 15 
+.B zx2c4@laptop ~ $ passh generate Email/jasondonenfeld.com 15 
 .br
 The generated password to Email/jasondonenfeld.com is: 
 .br
 $(-QF&Q=IN2nFBx
 .TP
 Generate new alphanumeric password
-.B zx2c4@laptop ~ $ pass generate -n Email/jasondonenfeld.com 12
+.B zx2c4@laptop ~ $ passh generate -n Email/jasondonenfeld.com 12
 .br
 The generated password to Email/jasondonenfeld.com is: 
 .br
 YqFsMkBeO6di
 .TP
 Generate new password and copy it to the clipboard
-.B zx2c4@laptop ~ $ pass generate -c Email/jasondonenfeld.com 19
+.B zx2c4@laptop ~ $ passh generate -c Email/jasondonenfeld.com 19
 .br
 Copied Email/jasondonenfeld.com to clipboard. Will clear in 45 seconds.
 .TP
 Remove password from store
-.B zx2c4@laptop ~ $ pass remove Business/cheese-whiz-factory 
+.B zx2c4@laptop ~ $ passh remove Business/cheese-whiz-factory 
 .br
 rm: remove regular file \[u2018]/home/zx2c4/.password-store/Business/cheese-whiz-factory.gpg\[u2019]? y 
 .br
 removed \[u2018]/home/zx2c4/.password-store/Business/cheese-whiz-factory.gpg\[u2019]
 
 .SH EXTENDED GIT EXAMPLE
-Here, we initialize new password store, create a git repository, and then manipulate and sync passwords. Make note of the arguments to the first call of \fBpass git push\fP; consult
+Here, we initialize new password store, create a git repository, and then manipulate and sync passwords. Make note of the arguments to the first call of \fBpassh git push\fP; consult
 .BR git-push (1)
 for more information.
 
-.B zx2c4@laptop ~ $ pass init Jason@zx2c4.com 
+.B zx2c4@laptop ~ $ passh init Jason@zx2c4.com 
 .br
 mkdir: created directory \[u2018]/home/zx2c4/.password-store\[u2019] 
 .br
 Password store initialized for Jason@zx2c4.com. 
 
-.B zx2c4@laptop ~ $ pass git init 
+.B zx2c4@laptop ~ $ passh git init 
 .br
 Initialized empty Git repository in /home/zx2c4/.password-store/.git/
 .br
@@ -314,9 +320,9 @@ Initialized empty Git repository in /home/zx2c4/.password-store/.git/
 .br
  create mode 100644 .gpg-id
 
-.B zx2c4@laptop ~ $ pass git remote add origin kexec.com:pass-store 
+.B zx2c4@laptop ~ $ passh git remote add origin kexec.com:pass-store 
 
-.B zx2c4@laptop ~ $ pass generate Amazon/amazonemail@email.com 21 
+.B zx2c4@laptop ~ $ passh generate Amazon/amazonemail@email.com 21 
 .br
 mkdir: created directory \[u2018]/home/zx2c4/.password-store/Amazon\[u2019] 
 .br
@@ -330,7 +336,7 @@ The generated password to Amazon/amazonemail@email.com is:
 .br
 <5m,_BrZY`antNDxKN<0A 
 
-.B zx2c4@laptop ~ $ pass git push -u --all
+.B zx2c4@laptop ~ $ passh git push -u --all
 .br
 Counting objects: 4, done. 
 .br
@@ -348,7 +354,7 @@ To kexec.com:pass-store
 .br
 Branch master set up to track remote branch master from origin. 
 
-.B zx2c4@laptop ~ $ pass insert Amazon/otheraccount@email.com 
+.B zx2c4@laptop ~ $ passh insert Amazon/otheraccount@email.com 
 .br
 Enter password for Amazon/otheraccount@email.com: som3r3a11yb1gp4ssw0rd!!88** 
 .br
@@ -358,7 +364,7 @@ Enter password for Amazon/otheraccount@email.com: som3r3a11yb1gp4ssw0rd!!88**
 .br
 create mode 100644 Amazon/otheraccount@email.com.gpg 
 
-.B zx2c4@laptop ~ $ pass rm Amazon/amazonemail@email.com 
+.B zx2c4@laptop ~ $ passh rm Amazon/amazonemail@email.com 
 .br
 rm: remove regular file \[u2018]/home/zx2c4/.password-store/Amazon/amazonemail@email.com.gpg\[u2019]? y 
 .br
@@ -372,7 +378,7 @@ rm 'Amazon/amazonemail@email.com.gpg'
 .br
 delete mode 100644 Amazon/amazonemail@email.com.gpg 
 
-.B zx2c4@laptop ~ $ pass git push
+.B zx2c4@laptop ~ $ passh git push
 .br
 Counting objects: 9, done. 
 .br
@@ -425,7 +431,7 @@ Specifies the number of seconds to wait before restoring the clipboard, by defau
 \fI45\fP seconds.
 .TP
 .I PASSWORD_STORE_UMASK
-Sets the umask of all files modified by pass, by default \fI077\fP.
+Sets the umask of all files modified by passh, by default \fI077\fP.
 .TP
 .I PASSWORD_STORE_GENERATED_LENGTH
 The default password length if the \fIpass-length\fP parameter to \fBgenerate\fP
@@ -460,6 +466,16 @@ The \fBinit\fP command will keep signatures of \fB.gpg-id\fP files up to date.
 .TP
 .I EDITOR
 The location of the text editor used by \fBedit\fP.
+.SH KNOWN LIMITATIONS
+The hierarchy of password names is stored as a plain text directory structure. 
+Passh itself does nothing to conceal the names you give to your keys or to 
+the directory structure which contains them.
+
+Passh also does nothing to hide the size of the data it encrypts. The design of 
+OpenPGP makes it trivial to compute the length of the clear text password.
+
+Other meta data such as timestamps are also not hidden, so all in all users should
+be careful about making the store public (as in a public git repository).
 .SH SEE ALSO
 .BR gpg2 (1),
 .BR tr (1),
@@ -468,21 +484,30 @@ The location of the text editor used by \fBedit\fP.
 .BR qrencode (1).
 
 .SH AUTHOR
+.B passh
+was written by
+.MT hackan@gmail.com
+HacKan
+.ME .
 .B pass
 was written by
 .MT Jason@zx2c4.com
 Jason A. Donenfeld
 .ME .
-For updates and more information, a project page is available on the
-.UR http://\:www.passwordstore.org/
-World Wide Web
+Check the
+.UR https://\:github.com/hackancuba/passh/
+passh repository
+.UE 
+or the 
+.UR https://\:passh.hackan.net/
+passh website
 .UE .
 
 .SH COPYING
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -490,5 +515,4 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
