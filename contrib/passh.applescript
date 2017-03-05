@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------------------
--- Applescript for easy invocation of 'pass'
+-- Applescript for easy invocation of 'passh'
 ---------------------------------------------------------------------------------------------
 --
 -- Author: Steffen Vogel <post@steffenvogel.de>
@@ -7,12 +7,12 @@
 --
 -- Installation:
 --
---   1. Copy this script to /Library/Scripts/pass.applescript
+--   1. Copy this script to /Library/Scripts/passh.applescript
 --
 --   2. Use the Automator to create a service which starts the following AppleScript:
 --
 --        on run {input, parameters}
---	      run script POSIX file "/Library/Scripts/pass.applescript"
+--	      run script POSIX file "/Library/Scripts/passh.applescript"
 --        end run
 --
 --   3. Install the application 'Notifications Scripting' from:
@@ -45,7 +45,7 @@ end if
 
 try
 	set entity to the text returned of (display dialog nPrompt default answer defPass buttons {"OK"} with title nTitle default button 1)
-	set pw to do shell script "export PATH=" & shellPath & "; pass " & entity
+	set pw to do shell script "export PATH=" & shellPath & "; passh " & entity
 	
 	set the clipboard to pw
 	
@@ -54,7 +54,7 @@ try
 		if pw is equal to (the clipboard) then
 			tell application "Notifications Scripting"
 				set event handlers script path to (path to me)
-				display notification nTitle id "pass" message "Password copied to clipboard (" & (clearAfter - secsLeft) & " secs left)" action button nClear with has action button
+				display notification nTitle id "passh" message "Password copied to clipboard (" & (clearAfter - secsLeft) & " secs left)" action button nClear with has action button
 			end tell
 			delay 1
 		else

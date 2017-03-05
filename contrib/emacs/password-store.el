@@ -45,8 +45,8 @@
   :type 'number)
 
 (defvar password-store-executable
-  (executable-find "pass")
-  "Pass executable.")
+  (executable-find "passh")
+  "Passh executable.")
 
 (defvar password-store-timeout-timer nil
   "Timer for clearing clipboard.")
