@@ -65,7 +65,7 @@ end
 pass_top_level = "Gorilla"
 entries.keys.each do |k|
   print "#{k}...(#{entries[k]})..."
-  IO.popen("pass insert -e -f '#{pass_top_level}/#{k}' > /dev/null", 'w') do |io|
+  IO.popen("passh insert -e -f '#{pass_top_level}/#{k}' > /dev/null", 'w') do |io|
     io.puts entries[k] + "\n"
   end
   if $? == 0

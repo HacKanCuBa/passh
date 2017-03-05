@@ -17,7 +17,7 @@ import sys
 import subprocess
 
 
-PASS_PROG = 'pass'
+PASS_PROG = 'passh'
 DEFAULT_USERNAME = 'login'
 
 

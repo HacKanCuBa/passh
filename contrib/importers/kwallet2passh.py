@@ -28,7 +28,7 @@ def insert_data(path,text):
     text = text.encode('utf8')
     
     #print "Import: " + path + ": " + text
-    proc = Popen(['pass', 'insert', '--multiline', '--force', path],
+    proc = Popen(['passh', 'insert', '--multiline', '--force', path],
                  stdin=PIPE, stdout=PIPE)
     proc.communicate(text)
     proc.wait()

@@ -7,7 +7,7 @@
 #   $TEST_HOME	This folder
 
 
-# Unset config vars
+# Unset config vars 
 unset PASSWORD_STORE_DIR
 unset PASSWORD_STORE_KEY
 unset PASSWORD_STORE_GIT
@@ -23,7 +23,7 @@ unset PASSWORD_STORE_EXTENSIONS_DIR
 unset PASSWORD_STORE_SIGNING_KEY
 unset EDITOR
 
-# We must be called from tests/
+# We must be called from tests/ !!
 TEST_HOME="$(pwd)"
 
 . ./sharness.sh
@@ -42,8 +42,10 @@ git config --global user.email "Pass-Automated-Testing-Suite@zx2c4.com"
 git config --global user.name "Pass Automated Testing Suite"
 
 
-PASS="$TEST_HOME/../src/password-store.sh"
-if [[ ! -e $PASS ]]; then
+
+PASSH="$TEST_HOME/../src/password-store.sh"
+PASS="$PASSH"
+if [[ ! -e $PASSH ]]; then
 	echo "Could not find password-store.sh"
 	exit 1
 fi

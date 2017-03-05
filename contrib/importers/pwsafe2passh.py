@@ -33,7 +33,7 @@ for i,row in df.iterrows():
     if na['Notes']:
         value = '\n{}\n'.format(value, row['Notes'].strip())
 
-    with subprocess.Popen(['pass','add','-m',path],stdin=subprocess.PIPE) as proc:
+    with subprocess.Popen(['passh','add','-m',path],stdin=subprocess.PIPE) as proc:
         proc.communicate(value.encode('utf8'))
         if proc.returncode:
             print('failure with {}, returned {}'.format(

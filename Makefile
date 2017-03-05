@@ -35,10 +35,10 @@ all:
 	@echo "Password store is a shell script, so there is nothing to do. Try \"make install\" instead."
 
 install-common:
-	@install -v -d "$(DESTDIR)$(MANDIR)/man1" && install -m 0644 -v man/pass.1 "$(DESTDIR)$(MANDIR)/man1/pass.1"
-	@[ "$(WITH_BASHCOMP)" = "yes" ] || exit 0; install -v -d "$(DESTDIR)$(BASHCOMPDIR)" && install -m 0644 -v src/completion/pass.bash-completion "$(DESTDIR)$(BASHCOMPDIR)/pass"
-	@[ "$(WITH_ZSHCOMP)" = "yes" ] || exit 0; install -v -d "$(DESTDIR)$(ZSHCOMPDIR)" && install -m 0644 -v src/completion/pass.zsh-completion "$(DESTDIR)$(ZSHCOMPDIR)/_pass"
-	@[ "$(WITH_FISHCOMP)" = "yes" ] || exit 0; install -v -d "$(DESTDIR)$(FISHCOMPDIR)" && install -m 0644 -v src/completion/pass.fish-completion "$(DESTDIR)$(FISHCOMPDIR)/pass.fish"
+	@install -v -d "$(DESTDIR)$(MANDIR)/man1" && install -m 0644 -v man/passh.1 "$(DESTDIR)$(MANDIR)/man1/passh.1"
+	@[ "$(WITH_BASHCOMP)" = "yes" ] || exit 0; install -v -d "$(DESTDIR)$(BASHCOMPDIR)" && install -m 0644 -v src/completion/passh.bash-completion "$(DESTDIR)$(BASHCOMPDIR)/passh"
+	@[ "$(WITH_ZSHCOMP)" = "yes" ] || exit 0; install -v -d "$(DESTDIR)$(ZSHCOMPDIR)" && install -m 0644 -v src/completion/passh.zsh-completion "$(DESTDIR)$(ZSHCOMPDIR)/_passh"
+	@[ "$(WITH_FISHCOMP)" = "yes" ] || exit 0; install -v -d "$(DESTDIR)$(FISHCOMPDIR)" && install -m 0644 -v src/completion/passh.fish-completion "$(DESTDIR)$(FISHCOMPDIR)/passh.fish"
 
 
 ifneq ($(strip $(wildcard $(PLATFORMFILE))),)
@@ -46,23 +46,23 @@ install: install-common
 	@install -v -d "$(DESTDIR)$(LIBDIR)/password-store" && install -m 0644 -v "$(PLATFORMFILE)" "$(DESTDIR)$(LIBDIR)/password-store/platform.sh"
 	@install -v -d "$(DESTDIR)$(LIBDIR)/password-store/extensions"
 	@install -v -d "$(DESTDIR)$(BINDIR)/"
-	@trap 'rm -f src/.pass' EXIT; sed 's:.*PLATFORM_FUNCTION_FILE.*:source "$(LIBDIR)/password-store/platform.sh":;s:^SYSTEM_EXTENSION_DIR=.*:SYSTEM_EXTENSION_DIR="$(LIBDIR)/password-store/extensions":' src/password-store.sh > src/.pass && \
-	install -v -d "$(DESTDIR)$(BINDIR)/" && install -m 0755 -v src/.pass "$(DESTDIR)$(BINDIR)/pass"
+	@trap 'rm -f src/.passh' EXIT; sed 's:.*PLATFORM_FUNCTION_FILE.*:source "$(LIBDIR)/password-store/platform.sh":;s:^SYSTEM_EXTENSION_DIR=.*:SYSTEM_EXTENSION_DIR="$(LIBDIR)/password-store/extensions":' src/password-store.sh > src/.passh && \
+	install -v -d "$(DESTDIR)$(BINDIR)/" && install -m 0755 -v src/.passh "$(DESTDIR)$(BINDIR)/passh"
 else
 install: install-common
 	@install -v -d "$(DESTDIR)$(LIBDIR)/password-store/extensions"
-	@trap 'rm -f src/.pass' EXIT; sed '/PLATFORM_FUNCTION_FILE/d;s:^SYSTEM_EXTENSION_DIR=.*:SYSTEM_EXTENSION_DIR="$(LIBDIR)/password-store/extensions":' src/password-store.sh > src/.pass && \
-	install -v -d "$(DESTDIR)$(BINDIR)/" && install -m 0755 -v src/.pass "$(DESTDIR)$(BINDIR)/pass"
+	@trap 'rm -f src/.passh' EXIT; sed '/PLATFORM_FUNCTION_FILE/d;s:^SYSTEM_EXTENSION_DIR=.*:SYSTEM_EXTENSION_DIR="$(LIBDIR)/password-store/extensions":' src/password-store.sh > src/.passh && \
+	install -v -d "$(DESTDIR)$(BINDIR)/" && install -m 0755 -v src/.passh "$(DESTDIR)$(BINDIR)/passh"
 endif
 
 uninstall:
 	@rm -vrf \
-		"$(DESTDIR)$(BINDIR)/pass" \
+		"$(DESTDIR)$(BINDIR)/passh" \
 		"$(DESTDIR)$(LIBDIR)/password-store" \
-		"$(DESTDIR)$(MANDIR)/man1/pass.1" \
-		"$(DESTDIR)$(BASHCOMPDIR)/pass" \
-		"$(DESTDIR)$(ZSHCOMPDIR)/_pass" \
-		"$(DESTDIR)$(FISHCOMPDIR)/pass.fish"
+		"$(DESTDIR)$(MANDIR)/man1/passh.1" \
+		"$(DESTDIR)$(BASHCOMPDIR)/passh" \
+		"$(DESTDIR)$(ZSHCOMPDIR)/_passh" \
+		"$(DESTDIR)$(FISHCOMPDIR)/passh.fish"
 
 TESTS = $(sort $(wildcard tests/t[0-9][0-9][0-9][0-9]-*.sh))
 
@@ -74,4 +74,7 @@ $(TESTS):
 clean:
 	$(RM) -rf tests/test-results/ tests/trash\ directory.*/ tests/gnupg/random_seed
 
-.PHONY: install uninstall install-common test clean $(TESTS)
+lint:
+	shellcheck -s bash src/password-store.sh
+
+.PHONY: install uninstall install-common test clean lint $(TESTS)

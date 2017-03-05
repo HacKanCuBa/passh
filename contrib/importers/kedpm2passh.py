@@ -24,7 +24,7 @@ def insert(d):
     for k, v in d.iteritems():
         content += "%s: %s\n" % (k, v)
     del d
-    cmd = ["pass", "insert", "--force", "--multiline", path]
+    cmd = ["passh", "insert", "--force", "--multiline", path]
     process = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate(content)
     retcode = process.wait()

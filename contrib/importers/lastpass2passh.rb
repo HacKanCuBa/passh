@@ -115,7 +115,7 @@ records.each do |r|
     next
   end
   print "Creating record #{r.name}..."
-  IO.popen("pass insert -m '#{r.name}' > /dev/null", 'w') do |io|
+  IO.popen("passh insert -m '#{r.name}' > /dev/null", 'w') do |io|
     io.puts r
   end
   if $? == 0

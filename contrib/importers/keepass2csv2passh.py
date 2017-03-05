@@ -47,8 +47,8 @@ class KeepassCSVArgParser(argparse.ArgumentParser):
 
 
 def pass_import_entry(path, data):
-    """Import new password entry to password-store using pass insert command"""
-    proc = Popen(['pass', 'insert', '--multiline', path], stdin=PIPE,
+    """Import new password entry to password-store using passh insert command"""
+    proc = Popen(['passh', 'insert', '--multiline', path], stdin=PIPE,
                  stdout=PIPE)
     proc.communicate(data.encode('utf8'))
     proc.wait()
@@ -157,7 +157,7 @@ def escape(str_to_escape):
 
 
 def main():
-    description = 'Import pass entries from an exported KeePassX CSV file.'
+    description = 'Import passh entries from an exported KeePassX CSV file.'
     parser = KeepassCSVArgParser(description=description)
 
     parser.add_argument('--exclude_groups', nargs='+',
@@ -166,7 +166,7 @@ def main():
                         help='Convert group and name to lowercase')
     parser.add_argument('--name_is_original', action='store_true',
                         help='Use the original entry name instead of the '
-                             'username for the pass entry')
+                             'username for the passh entry')
     parser.add_argument('input_file', help='The CSV file to read from')
 
     args = parser.parse_args()

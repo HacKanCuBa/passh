@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
-# Copyright (C) 2012 - 2017 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
-# This file is licensed under the GPLv2+. Please see COPYING for more information.
+# Passh Copyright (C) 2017 HacKan <hackan@gmail.com>.
+# Pass Copyright (C) 2012 - 2017 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+# This file is licensed under the GPLv3+. Please see LICENSE for more information.
+
+declare -r VERSION="1.7.0"
 
 umask "${PASSWORD_STORE_UMASK:-077}"
 set -o pipefail
@@ -138,7 +141,7 @@ reencrypt_path() {
 check_sneaky_paths() {
 	local path
 	for path in "$@"; do
-		[[ $path =~ /\.\.$ || $path =~ ^\.\./ || $path =~ /\.\./ || $path =~ ^\.\.$ ]] && die "Error: You've attempted to pass a sneaky path to pass. Go home."
+		[[ $path =~ /\.\.$ || $path =~ ^\.\./ || $path =~ /\.\./ || $path =~ ^\.\.$ ]] && die "Error: You've attempted to pass a sneaky path to ${PROGRAM}. Go home."
 	done
 }
 
@@ -239,14 +242,13 @@ source "$(dirname "$0")/platform/$(uname | cut -d _ -f 1 | tr '[:upper:]' '[:low
 cmd_version() {
 	cat <<-_EOF
 	============================================
-	= pass: the standard unix password manager =
+	=                  passh                   =
+	=    the standard unix password manager    =
 	=                                          =
-	=                   v1.7                   =
+	=       by HacKan under GNU GPL v3.0+      =
+	=                  v${VERSION}                  =
 	=                                          =
-	=             Jason A. Donenfeld           =
-	=               Jason@zx2c4.com            =
-	=                                          =
-	=      http://www.passwordstore.org/       =
+	=  a fork from pass by Jason A. Donenfeld  =
 	============================================
 	_EOF
 }
@@ -293,7 +295,7 @@ cmd_usage() {
 	    $PROGRAM version
 	        Show version information.
 
-	More information may be found in the pass(1) man page.
+	More information may be found in the ${PROGRAM}(1) man page.
 	_EOF
 }
 
@@ -381,7 +383,7 @@ cmd_show() {
 		fi
 		tree -C -l --noreport "$PREFIX/$path" | tail -n +2 | sed -E 's/\.gpg(\x1B\[[0-9]+m)?( ->|$)/\1\2/g' # remove .gpg at end of line, but keep colors
 	elif [[ -z $path ]]; then
-		die "Error: password store is empty. Try \"pass init\"."
+		die "Error: password store is empty. Try \"${PROGRAM} init\"."
 	else
 		die "Error: $path is not in the password store."
 	fi

@@ -1,5 +1,5 @@
 "
-" Prevent various Vim features from keeping the contents of pass(1) password
+" Prevent various Vim features from keeping the contents of passh(1) password
 " files (or any other purely temporary files) in plaintext on the system.
 "
 " Either append this to the end of your .vimrc, or install it as a plugin with
