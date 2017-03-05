@@ -4,10 +4,12 @@
 # Pass Copyright (C) 2012 - 2017 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
 # This file is licensed under the GPLv3+. Please see LICENSE for more information.
 
-declare -r VERSION="1.7.0"
+declare -r VERSION="1.7.1"
 
 umask "${PASSWORD_STORE_UMASK:-077}"
 set -o pipefail
+
+IFS=' ' read -ra PASSWORD_STORE_GPG_OPTS_ARRAY <<<"$PASSWORD_STORE_GPG_OPTS"
 
 GPG_OPTS=( $PASSWORD_STORE_GPG_OPTS "--quiet" "--yes" "--compress-algo=none" "--no-encrypt-to" )
 GPG="gpg"
@@ -61,8 +63,8 @@ die() {
 verify_file() {
 	[[ -n $PASSWORD_STORE_SIGNING_KEY ]] || return 0
 	[[ -f $1.sig ]] || die "Signature for $1 does not exist."
-	local fingerprints="$(gpg $PASSWORD_STORE_GPG_OPTS --verify --status-fd=1 "$1.sig" "$1" 2>/dev/null | sed -n 's/\[GNUPG:\] VALIDSIG \([A-F0-9]\{40\}\) .* \([A-F0-9]\{40\}\)$/\1\n\2/p')"
-	local fingerprint found=0
+	local fingerprints fingerprint found=0
+	fingerprints="$(gpg "${PASSWORD_STORE_GPG_OPTS_ARRAY[@]}" --verify --status-fd=1 "$1.sig" "$1" 2>/dev/null | sed -n 's/\[GNUPG:\] VALIDSIG \([A-F0-9]\{40\}\) .* \([A-F0-9]\{40\}\)$/\1\n\2/p')"
 	for fingerprint in $PASSWORD_STORE_SIGNING_KEY; do
 		[[ $fingerprint =~ ^[A-F0-9]{40}$ ]] || continue
 		[[ $fingerprints == *$fingerprint* ]] && { found=1; break; }
@@ -108,8 +110,8 @@ set_gpg_recipients() {
 }
 
 reencrypt_path() {
-	local prev_gpg_recipients="" gpg_keys="" current_keys="" index passfile
-	local groups="$($GPG $PASSWORD_STORE_GPG_OPTS --list-config --with-colons | grep "^cfg:group:.*")"
+	local prev_gpg_recipients="" gpg_keys="" current_keys="" index passfile groups
+	groups="$($GPG "${PASSWORD_STORE_GPG_OPTS_ARRAY[@]}" --list-config --with-colons | grep "^cfg:group:.*")"
 	while read -r -d "" passfile; do
 		local passfile_dir="${passfile%/*}"
 		passfile_dir="${passfile_dir#$PREFIX}"
@@ -121,19 +123,24 @@ reencrypt_path() {
 		set_gpg_recipients "$passfile_dir"
 		if [[ $prev_gpg_recipients != "${GPG_RECIPIENTS[*]}" ]]; then
 			for index in "${!GPG_RECIPIENTS[@]}"; do
-				local group="$(sed -n "s/^cfg:group:$(sed 's/[\/&]/\\&/g' <<<"${GPG_RECIPIENTS[$index]}"):\\(.*\\)\$/\\1/p" <<<"$groups" | head -n 1)"
+				local group
+				group="$(sed -n "s/^cfg:group:$(sed 's/[\/&]/\\&/g' <<<"${GPG_RECIPIENTS[$index]}"):\\(.*\\)\$/\\1/p" <<<"$groups" | head -n 1)"
 				[[ -z $group ]] && continue
 				IFS=";" eval 'GPG_RECIPIENTS+=( $group )' # http://unix.stackexchange.com/a/92190
 				unset GPG_RECIPIENTS[$index]
 			done
-			gpg_keys="$($GPG $PASSWORD_STORE_GPG_OPTS --list-keys --with-colons "${GPG_RECIPIENTS[@]}" | sed -n 's/sub:[^:]*:[^:]*:[^:]*:\([^:]*\):[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:[a-zA-Z]*e[a-zA-Z]*:.*/\1/p' | LC_ALL=C sort -u)"
+			gpg_keys="$($GPG "${PASSWORD_STORE_GPG_OPTS_ARRAY[@]}" --list-keys --with-colons "${GPG_RECIPIENTS[@]}" | sed -n 's/sub:[^:]*:[^:]*:[^:]*:\([^:]*\):[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:[a-zA-Z]*e[a-zA-Z]*:.*/\1/p' | LC_ALL=C sort -u)"
 		fi
-		current_keys="$($GPG $PASSWORD_STORE_GPG_OPTS -v --no-secmem-warning --no-permission-warning --list-only --keyid-format long "$passfile" 2>&1 | cut -d ' ' -f 5 | LC_ALL=C sort -u)"
+		current_keys="$($GPG "${PASSWORD_STORE_GPG_OPTS_ARRAY[@]}" -v --no-secmem-warning --no-permission-warning --list-only --keyid-format long "$passfile" 2>&1 | cut -d ' ' -f 5 | LC_ALL=C sort -u)"
 
 		if [[ $gpg_keys != "$current_keys" ]]; then
 			echo "$passfile_display: reencrypting to ${gpg_keys//$'\n'/ }"
-			$GPG -d "${GPG_OPTS[@]}" "$passfile" | $GPG -e "${GPG_RECIPIENT_ARGS[@]}" -o "$passfile_temp" "${GPG_OPTS[@]}" &&
-			mv "$passfile_temp" "$passfile" || rm -f "$passfile_temp"
+			$GPG -d "${GPG_OPTS[@]}" "$passfile" | $GPG -e "${GPG_RECIPIENT_ARGS[@]}" -o "$passfile_temp" "${GPG_OPTS[@]}"
+			if [[ $? -eq 0 ]]; then
+				mv "$passfile_temp" "$passfile"
+			else
+				rm -f "$passfile_temp"
+			fi
 		fi
 		prev_gpg_recipients="${GPG_RECIPIENTS[*]}"
 	done < <(find "$1" -path '*/.git' -prune -o -iname '*.gpg' -print0)
@@ -143,6 +150,54 @@ check_sneaky_paths() {
 	for path in "$@"; do
 		[[ $path =~ /\.\.$ || $path =~ ^\.\./ || $path =~ /\.\./ || $path =~ ^\.\.$ ]] && die "Error: You've attempted to pass a sneaky path to ${PROGRAM}. Go home."
 	done
+}
+
+SYSTEM_EXTENSION_DIR=""
+check_extension_and_load() {
+	check_sneaky_paths "$1"
+	local user_extension system_extension extension
+	[[ -n $SYSTEM_EXTENSION_DIR ]] && system_extension="$SYSTEM_EXTENSION_DIR/$1.bash"
+	[[ $PASSWORD_STORE_ENABLE_EXTENSIONS == true ]] && user_extension="$EXTENSIONS/$1.bash"
+	if [[ -n $user_extension && -f $user_extension && -x $user_extension ]]; then
+		verify_file "$user_extension"
+		extension="$user_extension"
+	elif [[ -n $system_extension && -f $system_extension && -x $system_extension ]]; then
+		extension="$system_extension"
+	else
+		return 1
+	fi
+	shift
+	# shellcheck source=/dev/null
+	source "$extension" "$@"
+	return 0
+}
+
+override_function() {
+	# Recieves a function name, and it renames it to pass_<function name>
+	# based on http://mivok.net/2009/09/20/bashfunctionoverrist.html
+	local func="$1"
+	
+	if type "$func" > /dev/null 2>&1; then
+		local contents newname
+		contents=$(declare -f $func)
+		newname="pass_${func}${contents#$func}"
+		eval "$newname"
+		return $?
+	fi
+	
+	return 1
+}
+
+in_array() {
+	local seeking="$1"; shift
+	local in=1
+	for element; do
+		if [[ "$element" == "$seeking" ]]; then
+			in=0
+			break
+		fi
+	done
+	return $in
 }
 
 #
@@ -157,13 +212,15 @@ clip() {
 	# This base64 business is because bash cannot store binary data in a shell
 	# variable. Specifically, it cannot store nulls nor (non-trivally) store
 	# trailing new lines.
-	local sleep_argv0="password store sleep on display $DISPLAY"
+	local sleep_argv0 before
+	sleep_argv0="password store sleep on display $DISPLAY"
 	pkill -f "^$sleep_argv0" 2>/dev/null && sleep 0.5
-	local before="$(xclip -o -selection "$X_SELECTION" 2>/dev/null | base64)"
+	before="$(xclip -o -selection "$X_SELECTION" 2>/dev/null | base64)"
 	echo -n "$1" | xclip -selection "$X_SELECTION" || die "Error: Could not copy data to the clipboard"
 	(
 		( exec -a "$sleep_argv0" bash <<<"trap 'kill %1' TERM; sleep '$CLIP_TIME' & wait" )
-		local now="$(xclip -o -selection "$X_SELECTION" | base64)"
+		local now
+		now="$(xclip -o -selection "$X_SELECTION" | base64)"
 		[[ $now != $(echo -n "$1" | base64) ]] && before="$now"
 
 		# It might be nice to programatically check to see if klipper exists,
@@ -218,7 +275,9 @@ tmpdir() {
 		)"
 		SECURE_TMPDIR="$(mktemp -d "${TMPDIR:-/tmp}/$template")"
 		shred_tmpfile() {
-			find "$SECURE_TMPDIR" -type f -exec $SHRED {} +
+			local shred_exec
+			IFS=' ' read -ra shred_exec <<<"$SHRED"
+			find "$SECURE_TMPDIR" -type f -exec "${shred_exec[@]}" {} +
 			rm -rf "$SECURE_TMPDIR"
 		}
 		trap shred_tmpfile INT TERM EXIT
@@ -228,6 +287,7 @@ tmpdir() {
 GETOPT="getopt"
 SHRED="shred -f -z"
 
+# shellcheck source=/dev/null
 source "$(dirname "$0")/platform/$(uname | cut -d _ -f 1 | tr '[:upper:]' '[:lower:]').sh" 2>/dev/null # PLATFORM_FUNCTION_FILE
 
 #
@@ -295,9 +355,41 @@ cmd_usage() {
 	    $PROGRAM version
 	        Show version information.
 
-	More information may be found in the ${PROGRAM}(1) man page.
 	_EOF
+	
+	if [[ (-n "$SYSTEM_EXTENSION_DIR" && -n "$(ls "$SYSTEM_EXTENSION_DIR"/*.bash 2>/dev/null)" ) || ($PASSWORD_STORE_ENABLE_EXTENSIONS == true && -n "$(ls "$EXTENSIONS"/*.bash 2>/dev/null)") ]]; then
+		echo "From extensions:"
+		local -a extdirs=( "$EXTENSIONS" "$SYSTEM_EXTENSION_DIR" )
+		local extdir ext extname exthelp extensions_called=()
+		for extdir in "${extdirs[@]}"; do
+			for ext in "$extdir"/*.bash; do
+				if [[ -r "$ext" && -x "$ext" ]]; then
+					extname="$(basename "$ext")"
+					# If extension was called from one dir, do not call it again
+					in_array "$extname" "${extensions_called[@]}" && continue
+					
+					# Extract help function, that must be called as help_extensionname()
+					exthelp="$(sed -nE "/^(function)?\s?help_${extname%.*}\(\)/,/^}/p" "$ext")"
+					if [[ -z "$exthelp" ]]; then
+						# Function inexistent
+						echo "    $PROGRAM ${extname%.*}"
+						echo "        (no help available)"
+					else
+						# Call it
+						eval "${exthelp}; help_${extname%.*}"
+					fi
+					extensions_called+=("$extname")
+				fi
+			done
+		done
+		[[ ${#extensions_called[@]} -eq 0 ]] && echo "    (no extensions enabled)"
+		echo
+	fi
+	
+	echo "More information may be found in the ${PROGRAM}(1) man page."
 }
+cmd_help() { cmd_usage "$@"; }
+cmd_h() { cmd_usage "$@"; }
 
 cmd_init() {
 	local opts id_path=""
@@ -327,7 +419,8 @@ cmd_init() {
 	else
 		mkdir -v -p "$PREFIX/$id_path"
 		printf "%s\n" "$@" > "$gpg_id"
-		local id_print="$(printf "%s, " "$@")"
+		local id_print
+		id_print="$(printf "%s, " "$@")"
 		echo "Password store initialized for ${id_print%, }${id_path:+ ($id_path)}"
 		git_add_file "$gpg_id" "Set GPG id to ${id_print%, }${id_path:+ ($id_path)}."
 		if [[ -n $PASSWORD_STORE_SIGNING_KEY ]]; then
@@ -367,16 +460,17 @@ cmd_show() {
 			$GPG -d "${GPG_OPTS[@]}" "$passfile" || exit $?
 		else
 			[[ $selected_line =~ ^[0-9]+$ ]] || die "Clip location '$selected_line' is not a number."
-			local pass="$($GPG -d "${GPG_OPTS[@]}" "$passfile" | tail -n +${selected_line} | head -n 1)"
-			[[ -n $pass ]] || die "There is no password to put on the clipboard at line ${selected_line}."
+			local pass
+			pass="$($GPG -d "${GPG_OPTS[@]}" "$passfile" | tail -n +"${selected_line}" | head -n 1)"
+			[[ -n "$pass" ]] || die "There is no password to put on the clipboard at line ${selected_line}."
 			if [[ $clip -eq 1 ]]; then
 				clip "$pass" "$path"
 			elif [[ $qrcode -eq 1 ]]; then
 				qrcode "$pass" "$path"
 			fi
 		fi
-	elif [[ -d $PREFIX/$path ]]; then
-		if [[ -z $path ]]; then
+	elif [[ -d "$PREFIX/$path" ]]; then
+		if [[ -z "$path" ]]; then
 			echo "Password Store"
 		else
 			echo "${path%\/}"
@@ -388,13 +482,17 @@ cmd_show() {
 		die "Error: $path is not in the password store."
 	fi
 }
+cmd_ls() { cmd_show "$@"; }
+cmd_list() { cmd_show "$@"; }
 
 cmd_find() {
 	[[ $# -eq 0 ]] && die "Usage: $PROGRAM $COMMAND pass-names..."
 	IFS="," eval 'echo "Search Terms: $*"'
-	local terms="*$(printf '%s*|*' "$@")"
+	local terms
+	terms="*$(printf '%s*|*' "$@")"
 	tree -C -l --noreport -P "${terms%|*}" --prune --matchdirs --ignore-case "$PREFIX" | tail -n +2 | sed -E 's/\.gpg(\x1B\[[0-9]+m)?( ->|$)/\1\2/g'
 }
+cmd_search() { cmd_find "$@"; }
 
 cmd_grep() {
 	[[ $# -ne 1 ]] && die "Usage: $PROGRAM $COMMAND search-string"
@@ -460,11 +558,13 @@ cmd_insert() {
 	fi
 	git_add_file "$passfile" "Add given password for $path to store."
 }
+cmd_add() { cmd_insert "$@"; }
 
 cmd_edit() {
 	[[ $# -ne 1 ]] && die "Usage: $PROGRAM $COMMAND pass-name"
 
-	local path="${1%/}"
+	local path tmp_file
+	path="${1%/}"
 	check_sneaky_paths "$path"
 	mkdir -p -v "$PREFIX/$(dirname "$path")"
 	set_gpg_recipients "$(dirname "$path")"
@@ -472,7 +572,7 @@ cmd_edit() {
 	set_git "$passfile"
 
 	tmpdir #Defines $SECURE_TMPDIR
-	local tmp_file="$(mktemp -u "$SECURE_TMPDIR/XXXXXX")-${path//\//-}.txt"
+	tmp_file="$(mktemp -u "$SECURE_TMPDIR/XXXXXX")-${path//\//-}.txt"
 
 
 	local action="Add"
@@ -515,7 +615,7 @@ cmd_generate() {
 
 	[[ $inplace -eq 0 && $force -eq 0 && -e $passfile ]] && yesno "An entry already exists for $path. Overwrite it?"
 
-	read -r -n $length pass < <(LC_ALL=C tr -dc "$characters" < /dev/urandom)
+	read -r -n "$length" pass < <(LC_ALL=C tr -dc "$characters" < /dev/urandom)
 	[[ ${#pass} -eq $length ]] || die "Could not generate password from /dev/urandom."
 	if [[ $inplace -eq 0 ]]; then
 		$GPG -e "${GPG_RECIPIENT_ARGS[@]}" -o "$passfile" "${GPG_OPTS[@]}" <<<"$pass" || die "Password encryption aborted."
@@ -572,6 +672,8 @@ cmd_delete() {
 	fi
 	rmdir -p "${passfile%/*}" 2>/dev/null
 }
+cmd_remove() { cmd_delete "$@"; }
+cmd_rm() { cmd_delete "$@"; }
 
 cmd_copy_move() {
 	local opts move=1 force=0
@@ -627,6 +729,10 @@ cmd_copy_move() {
 		git_add_file "$new_path" "Copy ${1} to ${2}."
 	fi
 }
+cmd_rename() { cmd_copy_move "move" "$@"; }
+cmd_mv() { cmd_copy_move "move" "$@"; }
+cmd_cp() { cmd_copy_move "copy" "$@"; }
+cmd_copy() { cmd_copy_move "copy" "$@"; }
 
 cmd_git() {
 	set_git "$PREFIX/"
@@ -648,30 +754,26 @@ cmd_git() {
 	fi
 }
 
-cmd_extension_or_show() {
-	if ! cmd_extension "$@"; then
-		COMMAND="show"
-		cmd_show "$@"
+cmd_internal() {
+	local cmd counter=0
+	cmd="$COMMAND"
+	
+	# Remove dashes (up to 2)
+	while [[ "${cmd:0:1}" == "-" && $counter -lt 2 ]]; do
+		cmd="${cmd:1}"
+		let counter+=1
+	done
+	
+	# Check if a function exists
+	if type "cmd_${cmd}" > /dev/null 2>&1; then
+		shift
+		eval '"cmd_${cmd}" "$@"'
+		# Internal commands don't handle well return values, but they either 
+		# die (exit 1) or succeed, so fix return value to 0
+		return 0
 	fi
-}
-
-SYSTEM_EXTENSION_DIR=""
-cmd_extension() {
-	check_sneaky_paths "$1"
-	local user_extension system_extension extension
-	[[ -n $SYSTEM_EXTENSION_DIR ]] && system_extension="$SYSTEM_EXTENSION_DIR/$1.bash"
-	[[ $PASSWORD_STORE_ENABLE_EXTENSIONS == true ]] && user_extension="$EXTENSIONS/$1.bash"
-	if [[ -n $user_extension && -f $user_extension && -x $user_extension ]]; then
-		verify_file "$user_extension"
-		extension="$user_extension"
-	elif [[ -n $system_extension && -f $system_extension && -x $system_extension ]]; then
-		extension="$system_extension"
-	else
-		return 1
-	fi
-	shift
-	source "$extension" "$@"
-	return 0
+	
+	return 1
 }
 
 #
@@ -681,20 +783,23 @@ cmd_extension() {
 PROGRAM="${0##*/}"
 COMMAND="$1"
 
-case "$1" in
-	init) shift;			cmd_init "$@" ;;
-	help|--help) shift;		cmd_usage "$@" ;;
-	version|--version) shift;	cmd_version "$@" ;;
-	show|ls|list) shift;		cmd_show "$@" ;;
-	find|search) shift;		cmd_find "$@" ;;
-	grep) shift;			cmd_grep "$@" ;;
-	insert|add) shift;		cmd_insert "$@" ;;
-	edit) shift;			cmd_edit "$@" ;;
-	generate) shift;		cmd_generate "$@" ;;
-	delete|rm|remove) shift;	cmd_delete "$@" ;;
-	rename|mv) shift;		cmd_copy_move "move" "$@" ;;
-	copy|cp) shift;			cmd_copy_move "copy" "$@" ;;
-	git) shift;			cmd_git "$@" ;;
-	*)				cmd_extension_or_show "$@" ;;
-esac
+# Check if command is an extension
+check_extension_and_load "$@" && exit 0
+
+# Check if command is internal command
+#
+# Internal commands must begin with cmd_ and named like cmd_command
+# Multiname functions such as delete=remove=rm can be done like 
+#  cmd_remove() { cmd_delete; }
+#  cmd_rm() { cmd_delete; }
+# Others like help=--help are handled by cmd_internal() as long as a function 
+# exists without --
+# Bear in mind that aliases are not expanded by eval (used in cmd_internal), 
+# so creating functions is a better way to go.
+cmd_internal "$@" && exit 0
+
+# Assume its an implicit show command
+COMMAND="show"
+check_extension_and_load show "$@" || cmd_show "$@"
+
 exit 0
