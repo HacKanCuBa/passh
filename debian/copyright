@@ -1,0 +1,32 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: passh
+Source: 
+
+Files: *
+Copyright: 2017 Ivan Ariel Barrera Oro <ivan@barreraoro.com.ar>
+           <years> <likewise for another author>
+License: GPL-3+
+
+Files: debian/*
+Copyright: 2017 Adrian Alves <aalves@gmail.com>
+License: GPL-3+
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 3 of the License, or (at your
+option) any later version.
+.
+The program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+.
+You should have received a copy of the GNU General Public License along
+with this program.  If not, see <http://www.gnu.org/licenses/>.
+.
+On Debian systems, version 3 of the GPL license can be found in
+/usr/share/common-licenses/GPL-3 .
+.
+Note that you can either choose version 3 of the GPL, or any later
+version of the license, as published by the Free Software Foundation.
+Links to currently released versions are listed above for your
+convenience only.
