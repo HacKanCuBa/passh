@@ -107,7 +107,7 @@ Rough changes from [pass-master](https://github.com/HacKanCuBa/passh/tree/pass-m
 
 ## License
 
-**Pass** is made by [Jason Donenfeld](mailto:Jason@zx2c4.com) and licensed under GNU GPL v2.0. **Passh** is made by [HacKan](https://hackan.net) under GNU GPL v3.0+.
+**Pass** is made by [Jason Donenfeld](mailto:Jason@zx2c4.com) and licensed under GNU GPL v2.0+. **Passh** is made by [HacKan](https://hackan.net) under GNU GPL v3.0+.
 
     Copyright (C) 2017 HacKan (https://hackan.net)
 
