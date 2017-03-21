@@ -2,7 +2,7 @@ Source: passh
 Section: utilities
 Priority: optional
 Maintainer: Adrian Alves <aalves@gmail.com>
-Build-Depends: debhelper (>= 9)
+Build-Depends: debhelper (>= 9), bash, make
 Standards-Version: 3.9.8
 Homepage: https://github.com/HacKanCuBa/passh
 #Vcs-Git: https://anonscm.debian.org/collab-maint/passh.git
@@ -10,7 +10,7 @@ Homepage: https://github.com/HacKanCuBa/passh
 
 Package: passh
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, bash, gnupg2, tree, xclip, qrencode, util-linux
 Description: pass fork to store and generate passwords
  Pass is a simple password store. This fork changes a few
  things while trying to maintain most of it intact,
