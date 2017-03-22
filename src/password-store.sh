@@ -368,11 +368,11 @@ cmd_usage() {
 					# If extension was called from one dir, do not call it again
 					in_array "$extname" "${extensions_called[@]}" && continue
 					
+					echo "    $PROGRAM ${extname%.*}"
 					# Extract help function, that must be called as help_extensionname()
 					exthelp="$(sed -nE "/^(function)?\s?help_${extname%.*}\(\)/,/^}/p" "$ext")"
 					if [[ -z "$exthelp" ]]; then
 						# Function inexistent
-						echo "    $PROGRAM ${extname%.*}"
 						echo "        (no help available)"
 					else
 						# Call it
