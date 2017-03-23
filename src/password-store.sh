@@ -132,7 +132,7 @@ reencrypt_path() {
 			gpg_keys="$($GPG "${PASSWORD_STORE_GPG_OPTS_ARRAY[@]}" --list-keys --with-colons "${GPG_RECIPIENTS[@]}" | sed -n 's/sub:[^:]*:[^:]*:[^:]*:\([^:]*\):[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:[a-zA-Z]*e[a-zA-Z]*:.*/\1/p' | LC_ALL=C sort -u)"
 		fi
 		current_keys="$($GPG "${PASSWORD_STORE_GPG_OPTS_ARRAY[@]}" -v --no-secmem-warning --no-permission-warning --list-only --keyid-format long "$passfile" 2>&1 | cut -d ' ' -f 5 | LC_ALL=C sort -u)"
-		
+
 		if [[ $gpg_keys != "$current_keys" ]]; then
 			echo "$passfile_display: reencrypting to ${gpg_keys//$'\n'/ }"
 			$GPG -d "${GPG_OPTS[@]}" "$passfile" | $GPG -e "${GPG_RECIPIENT_ARGS[@]}" -o "$passfile_temp" "${GPG_OPTS[@]}"
@@ -324,7 +324,7 @@ cmd_usage() {
 	    $PROGRAM [ls] [subfolder]
 	        List passwords.
 	    $PROGRAM find pass-names...
-	    	List passwords that match pass-names.
+	        List passwords that match pass-names.
 	    $PROGRAM [show] [--clip[=line-number],-c[line-number]] pass-name
 	        Show existing password and optionally put it on the clipboard.
 	        If put on the clipboard, it will be cleared in $CLIP_TIME seconds.
@@ -367,7 +367,7 @@ cmd_usage() {
 					extname="$(basename "$ext")"
 					# If extension was called from one dir, do not call it again
 					in_array "$extname" "${extensions_called[@]}" && continue
-					
+
 					echo "    $PROGRAM ${extname%.*}"
 					# Extract help function, that must be called as help_extensionname()
 					exthelp="$(sed -nE "/^(function)?\s?help_${extname%.*}\(\)/,/^}/p" "$ext")"
@@ -574,7 +574,6 @@ cmd_edit() {
 	tmpdir #Defines $SECURE_TMPDIR
 	tmp_file="$(mktemp -u "$SECURE_TMPDIR/XXXXXX")-${path//\//-}.txt"
 
-
 	local action="Add"
 	if [[ -f $passfile ]]; then
 		$GPG -d -o "$tmp_file" "${GPG_OPTS[@]}" "$passfile" || exit 1
@@ -757,13 +756,13 @@ cmd_git() {
 cmd_internal() {
 	local cmd counter=0
 	cmd="$COMMAND"
-	
+
 	# Remove dashes (up to 2)
 	while [[ "${cmd:0:1}" == "-" && $counter -lt 2 ]]; do
 		cmd="${cmd:1}"
 		let counter+=1
 	done
-	
+
 	# Check if a function exists
 	if type "cmd_${cmd}" > /dev/null 2>&1; then
 		shift
@@ -772,7 +771,7 @@ cmd_internal() {
 		# die (exit 1) or succeed, so fix return value to 0
 		return 0
 	fi
-	
+
 	return 1
 }
 
