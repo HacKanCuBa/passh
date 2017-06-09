@@ -4,7 +4,7 @@
 # Pass Copyright (C) 2012 - 2017 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
 # This file is licensed under the GPLv3+. Please see LICENSE for more information.
 
-declare -r VERSION="1.7.1"
+declare -r VERSION="1.7.2"
 
 umask "${PASSWORD_STORE_UMASK:-077}"
 set -o pipefail
@@ -61,10 +61,12 @@ die() {
 	exit 1
 }
 verify_file() {
-	[[ -n $PASSWORD_STORE_SIGNING_KEY ]] || return 0
-	[[ -f $1.sig ]] || die "Signature for $1 does not exist."
+	[[ -n "$PASSWORD_STORE_SIGNING_KEY" ]] || return 0
+	[[ -f "$1.sig" ]] || die "Signature for $1 does not exist."
+
 	local fingerprints fingerprint found=0
-	fingerprints="$(gpg "${PASSWORD_STORE_GPG_OPTS_ARRAY[@]}" --verify --status-fd=1 "$1.sig" "$1" 2>/dev/null | sed -n 's/\[GNUPG:\] VALIDSIG \([A-F0-9]\{40\}\) .* \([A-F0-9]\{40\}\)$/\1\n\2/p')"
+	fingerprints="$($GPG "${PASSWORD_STORE_GPG_OPTS_ARRAY[@]}" --verify --status-fd=1 "$1.sig" "$1" 2>/dev/null | sed -n 's/\[GNUPG:\] VALIDSIG \([A-F0-9]\{40\}\) .* \([A-F0-9]\{40\}\)$/\1\n\2/p')"
+
 	for fingerprint in $PASSWORD_STORE_SIGNING_KEY; do
 		[[ $fingerprint =~ ^[A-F0-9]{40}$ ]] || continue
 		[[ $fingerprints == *$fingerprint* ]] && { found=1; break; }
@@ -131,7 +133,7 @@ reencrypt_path() {
 			done
 			gpg_keys="$($GPG "${PASSWORD_STORE_GPG_OPTS_ARRAY[@]}" --list-keys --with-colons "${GPG_RECIPIENTS[@]}" | sed -n 's/sub:[^:]*:[^:]*:[^:]*:\([^:]*\):[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:[a-zA-Z]*e[a-zA-Z]*:.*/\1/p' | LC_ALL=C sort -u)"
 		fi
-		current_keys="$($GPG "${PASSWORD_STORE_GPG_OPTS_ARRAY[@]}" -v --no-secmem-warning --no-permission-warning --list-only --keyid-format long "$passfile" 2>&1 | cut -d ' ' -f 5 | LC_ALL=C sort -u)"
+		current_keys="$(LC_ALL=C $GPG "${PASSWORD_STORE_GPG_OPTS_ARRAY[@]}" -v --no-secmem-warning --no-permission-warning --decrypt --list-only --keyid-format long "$passfile" 2>&1 | sed -n 's/^gpg: public key is \([A-F0-9]\+\)$/\1/p' | LC_ALL=C sort -u)"
 
 		if [[ $gpg_keys != "$current_keys" ]]; then
 			echo "$passfile_display: reencrypting to ${gpg_keys//$'\n'/ }"
@@ -428,8 +430,8 @@ cmd_init() {
 			for key in $PASSWORD_STORE_SIGNING_KEY; do
 				signing_keys+=( --default-key $key )
 			done
-			gpg "${GPG_OPTS[@]}" "${signing_keys[@]}" --detach-sign "$gpg_id" || die "Could not sign .gpg_id."
-			key="$(gpg --verify --status-fd=1 "$gpg_id.sig" "$gpg_id" 2>/dev/null | sed -n 's/\[GNUPG:\] VALIDSIG [A-F0-9]\{40\} .* \([A-F0-9]\{40\}\)$/\1/p')"
+			$GPG "${GPG_OPTS[@]}" "${signing_keys[@]}" --detach-sign "$gpg_id" || die "Could not sign .gpg_id."
+			key="$($GPG --verify --status-fd=1 "$gpg_id.sig" "$gpg_id" 2>/dev/null | sed -n 's/\[GNUPG:\] VALIDSIG [A-F0-9]\{40\} .* \([A-F0-9]\{40\}\)$/\1/p')"
 			[[ -n $key ]] || die "Signing of .gpg_id unsuccessful."
 			git_add_file "$gpg_id.sig" "Signing new GPG id with ${key//[$IFS]/,}."
 		fi
