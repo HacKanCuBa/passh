@@ -47,12 +47,12 @@ install: install-common
 	@install -v -d "$(DESTDIR)$(LIBDIR)/password-store/extensions"
 	@install -v -d "$(DESTDIR)$(BINDIR)/"
 	@trap 'rm -f src/.passh' EXIT; sed 's:.*PLATFORM_FUNCTION_FILE.*:source "$(LIBDIR)/password-store/platform.sh":;s:^SYSTEM_EXTENSION_DIR=.*:SYSTEM_EXTENSION_DIR="$(LIBDIR)/password-store/extensions":' src/password-store.sh > src/.passh && \
-	install -v -d "$(DESTDIR)$(BINDIR)/" && install -m 0755 -v src/.passh "$(DESTDIR)$(BINDIR)/passh"
+	install -v -d "$(DESTDIR)$(BINDIR)/" && install -m 0755 -v src/.passh "$(DESTDIR)$(BINDIR)/passh" && install -m 0755 -v contrib/dmenu/passhmenu "$(DESTDIR)$(BINDIR)/passhmenu"
 else
 install: install-common
 	@install -v -d "$(DESTDIR)$(LIBDIR)/password-store/extensions"
 	@trap 'rm -f src/.passh' EXIT; sed '/PLATFORM_FUNCTION_FILE/d;s:^SYSTEM_EXTENSION_DIR=.*:SYSTEM_EXTENSION_DIR="$(LIBDIR)/password-store/extensions":' src/password-store.sh > src/.passh && \
-	install -v -d "$(DESTDIR)$(BINDIR)/" && install -m 0755 -v src/.passh "$(DESTDIR)$(BINDIR)/passh"
+	install -v -d "$(DESTDIR)$(BINDIR)/" && install -m 0755 -v src/.passh "$(DESTDIR)$(BINDIR)/passh" && install -m 0755 -v contrib/dmenu/passhmenu "$(DESTDIR)$(BINDIR)/passhmenu"
 endif
 
 uninstall:
@@ -62,7 +62,8 @@ uninstall:
 		"$(DESTDIR)$(MANDIR)/man1/passh.1" \
 		"$(DESTDIR)$(BASHCOMPDIR)/passh" \
 		"$(DESTDIR)$(ZSHCOMPDIR)/_passh" \
-		"$(DESTDIR)$(FISHCOMPDIR)/passh.fish"
+		"$(DESTDIR)$(FISHCOMPDIR)/passh.fish" \
+		"$(DESTDIR)$(BINDIR)/passhmenu"
 
 TESTS = $(sort $(wildcard tests/t[0-9][0-9][0-9][0-9]-*.sh))
 

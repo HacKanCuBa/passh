@@ -46,7 +46,9 @@ Always prefer downloading [releases](https://github.com/HacKanCuBa/passh/release
 
 It's a good practice to run `make test` prior installing, to be sure that passh is working correctly.
 
-If you don't want to `sudo make install`, you can simply copy `src/password-store.sh` to `/usr/bin/passh`. Optionally, check completion helpers in `src/completion` and man page at `man/passh.1`
+If you don't want to `sudo make install`, you can simply copy `src/password-store.sh` to `/usr/bin/passh`. Optionally, check completion helpers in `src/completion`, man page in `man/passh.1` and passhmenu in `contrib/dmenu`.
+
+Check the *contrib* directory for other contributions and helpers for passh.
 
 ### Uninstalling
 
@@ -61,6 +63,8 @@ Clone the git repo or download latest release and run `make test` inside the dir
 
     cd passh
     make test
+
+You can run individual tests like `tests/t0001-sanity-checks.sh`, and debug them with `-v`: `tests/t0001-sanity-checks.sh -v`.
 
 ## Extensions
 
