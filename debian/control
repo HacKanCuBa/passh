@@ -11,8 +11,8 @@ Homepage: https://github.com/HacKanCuBa/passh
 Package: passh
 Architecture: all
 Depends: ${shlibs:Depends}, bash, gnupg2, tree, xclip, qrencode, util-linux
-Description: pass fork to store and generate passwords
- Pass is a simple password store. This fork changes a few
+Description: passh is a pass fork to store and generate passwords
+ Passh is a simple password store. This fork changes a few
  things while trying to maintain most of it intact,
  specially the core idea. I will keep pulling pass commits,
  and also pushing my modifications to them.
