@@ -41,14 +41,15 @@ Here's a very simple extension, named `example.bash`. This is a very complete ex
 help_example()
 {
     cat <<-_EOF
-    $PROGRAM example
+    [--parameter1,-p1] ...
         This is an example extension.
-_EOF    
+_EOF
 }
 
 usage_example() {
     cat <<-_EOF
 Usage:
+$PROGRAM example
 $(help_example)
 
 More information may be found in the passh-example(1) man page.

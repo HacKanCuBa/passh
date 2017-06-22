@@ -6,9 +6,7 @@ Forked from https://git.zx2c4.com/password-store.
 
 ## About
 
-This is a very simple password store that encrypts passwords using gpg and
-places the encrypted password in a directory. It can generate new passwords
-and keep track of old ones.
+This is a very simple password store that encrypts passwords using gpg and places the encrypted password in a directory. It can generate new passwords and keep track of old ones.
 
 Please see the [man page](https://github.com/HacKanCuBa/passh/blob/master/man/passh.md) for documentation and examples: `man passh`.
 
@@ -33,7 +31,7 @@ The original project page is: https://www.passwordstore.org/
 
 ### Installing
 
-Check install guide in **[latest release](https://github.com/HacKanCuBa/passh/releases/latest)**.
+Check install guide in **[latest release](https://github.com/HacKanCuBa/passh/releases/latest)**. Remember to satisfy dependencies indicated above.
 
 You can use **passh** along with **pass** without inconvenient, and have them both installed at the same time. They both use the same password store and extensions, so you can switch from one to the other. Do note, however, that some passh extensions can't be executed by pass, but every pass extension is executable by passh.
 
@@ -88,7 +86,7 @@ Passh source code (password-store.sh) and some helper scripts like completion an
 
 ### [tests](https://github.com/HacKanCuBa/passh/tree/master/tests)
 
-Test files based on [Sharness](https://github.com/chriscool/sharness), they are named like `tNNNN-description.sh`. Simply run them individually, through `run-all-tests` script or `make test` from the main directory as explained [above](#testing).
+Test files based on [Sharness](https://github.com/chriscool/sharness), they are named like `tNNNN-description.sh`. Simply run them individually like `./tests/tNNNN-description.sh` (optionally pass `-v` to make it verbose), or  `make test` from the main directory as explained [above](#testing) to run them all.
 
 ## Development
 
@@ -109,7 +107,7 @@ Rough changes from [pass-master](https://github.com/HacKanCuBa/passh/tree/pass-m
 
 ## License
 
-**Pass** is made by [Jason Donenfeld](mailto:Jason@zx2c4.com) and licensed under GNU GPL v2.0. **Passh** is made by [HacKan](https://hackan.net) under GNU GPL v3.0+.
+**Pass** is made by [Jason Donenfeld](mailto:Jason@zx2c4.com) and licensed under GNU GPL v2.0+. **Passh** is made by [HacKan](https://hackan.net) under GNU GPL v3.0+.
 
     Copyright (C) 2017 HacKan (https://hackan.net)
 
