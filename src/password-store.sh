@@ -18,12 +18,16 @@ which gpg2 &>/dev/null && GPG="gpg2"
 [[ -n $GPG_AGENT_INFO || $GPG == "gpg2" ]] && GPG_OPTS+=( "--batch" "--use-agent" )
 
 PREFIX="${PASSWORD_STORE_DIR:-$HOME/.password-store}"
+PREFIXDEC=""
+[[ -d "$PREFIX-enc" && -f "$PREFIX-enc/.masterkey" ]] && PREFIXDEC="$PREFIX" && PREFIX="$PREFIX-enc"
+
 EXTENSIONS="${PASSWORD_STORE_EXTENSIONS_DIR:-$PREFIX/.extensions}"
 X_SELECTION="${PASSWORD_STORE_X_SELECTION:-clipboard}"
 CLIP_TIME="${PASSWORD_STORE_CLIP_TIME:-45}"
 GENERATED_LENGTH="${PASSWORD_STORE_GENERATED_LENGTH:-25}"
 CHARACTER_SET="${PASSWORD_STORE_CHARACTER_SET:-[:graph:]}"
 CHARACTER_SET_NO_SYMBOLS="${PASSWORD_STORE_CHARACTER_SET_NO_SYMBOLS:-[:alnum:]}"
+ARGON2_OPTS=( ${PASSWORD_STORE_ARGON2_OPTS:--t 3 -m 19 -p 1} -l 64 -r )
 
 export GIT_CEILING_DIRECTORIES="$PREFIX/.."
 
@@ -200,6 +204,112 @@ in_array() {
 	return $in
 }
 
+b64_encode() {
+	# base64 isn't in every platform
+	openssl base64 -A
+}
+
+b64_decode() {
+	# base64 isn't in every platform
+	local data
+	read -r data
+	# Note: it requires line termination to decode
+	printf "%s\n" "$data" | openssl base64 -d
+}
+
+b64safe_encode() {
+	# Prints safe base64 encode based on RFC 4648
+	# echo data | b64safe_encode
+	b64_encode | sed -e 's/+/-/g; s/\//_/g'
+}
+
+b64safe_decode() {
+	# Prints decoded data from safe base 64 input, based on RFC 4648
+	# echo <b64_safe data> | b64safe_decode
+	sed -e 's/-/+/g; s/_/\//g' | b64_decode
+}
+
+mk_generate_mode1() {
+	# Derives a Master Key from GPG Secret Key using Argon2i
+	local fingerprint outfile="$1"
+
+	# Must not be used for more than one key!
+	fingerprint="$(LC_ALL=C $GPG --batch --quiet --fingerprint --with-colons --fixed-list-mode "$(head -n 1 "$PREFIX/.gpg-id")" | grep -m 1 fpr | sed 's/fpr//; s/://g')"
+	set_gpg_recipients "$PREFIX"
+	$GPG "${GPG_OPTS[@]}" --quiet --export-secret-keys "$fingerprint" | argon2 "$fingerprint" "${ARGON2_OPTS[@]}" | $GPG -e "${GPG_RECIPIENT_ARGS[@]}" -o "$outfile" "${GPG_OPTS[@]}" || die "Can't generate derived Master Key"
+}
+
+mk_generate_mode2() {
+	# Generates a random Master Key
+	local outfile="$1"
+
+	getrandom 64 | argon2 "$(getrandom 8)" "${ARGON2_OPTS[@]}" | $GPG -e "${GPG_RECIPIENT_ARGS[@]}" -o "$outfile" "${GPG_OPTS[@]}" || die "Can't generate random Master Key"
+}
+
+mk_generate() {
+	# Generates a new Master Key
+	# mk_generate [<mode=1|2>]
+
+	local mk_user_mode="$1" mk_file="$PREFIX/.masterkey" mk_mode
+
+	# Identify which mode is to be used
+	if [[ -n "$mk_user_mode" ]]; then
+		mk_mode="$mk_user_mode"
+	else
+		set_gpg_recipients
+		if [[ ${#GPG_RECIPIENTS[@]} -eq 1 ]]; then
+			# Use SK derive mode
+			mk_mode=1
+		else
+			# Use random mode
+			mk_mode=2
+		fi
+		unset GPG_RECIPIENTS GPG_RECIPIENT_ARGS
+	fi
+
+	eval "mk_generate_mode$mk_mode > $mk_file" || die "Can't generate Master Key"
+
+	git_add_file "$mk_file" "Add new Master Key to store."
+
+	if [[ -n $PASSWORD_STORE_SIGNING_KEY ]]; then
+		local signing_keys=( ) key
+		for key in $PASSWORD_STORE_SIGNING_KEY; do
+			signing_keys+=( --default-key $key )
+		done
+		gpg "${GPG_OPTS[@]}" "${signing_keys[@]}" --detach-sign "$mk_file" || die "Could not sign .masterkey."
+		key="$(gpg --verify --status-fd=1 "$mk_file.sig" "$mk_file" 2>/dev/null | sed -n 's/\[GNUPG:\] VALIDSIG [A-F0-9]\{40\} .* \([A-F0-9]\{40\}\)$/\1/p')"
+		[[ -n $key ]] || die "Signing of .masterkey unsuccessful."
+		git_add_file "$mk_file.sig" "Signing new Master Key with ${key//[$IFS]/,}."
+	fi
+}
+
+mk_read() {
+	# Reads Master Key from file
+	[[ -f "$PREFIX/.masterkey" ]] || die "Master Key file doesn't exists."
+	$GPG "${GPG_OPTS[@]}" --quiet --decrypt "$PREFIX/.masterkey" || exit $?
+}
+
+encrypt_name() {
+	# Encrypts a given string, outputs in base64 safe
+	local name="$1" tempname
+
+	tmpdir
+	tempname="$(mktemp -u "$SECURE_TMPDIR/XXXXXX")"
+	printf "%s" "$name" > "$SECURE_TMPDIR/$tempname"
+	mk_read | $GPG "${GPG_OPTS[@]}" --pinentry-mode loopback --passphrase-fd 0 --quiet -o - --symmetric "$SECURE_TMPDIR/$tempname" | b64safe_encode || exit $?
+	# rm -f "$SECURE_TMPDIR/$tempname" > /dev/null 2>&1
+}
+
+decrypt_name() {
+	# Decrypts a given string in base64 safe
+	local name="$1" tempname
+
+	tmpdir
+	tempname="$(mktemp -u "$SECURE_TMPDIR/XXXXXX")"
+	printf "%s" "$name" | b64safe_decode > "$SECURE_TMPDIR/$tempname"
+	mk_read | $GPG "${GPG_OPTS[@]}" --pinentry-mode loopback --passphrase-fd 0 --quiet -o - --decrypt "$SECURE_TMPDIR/$tempname" || exit $?
+}
+
 #
 # END helper functions
 #
@@ -207,6 +317,21 @@ in_array() {
 #
 # BEGIN platform definable
 #
+
+getrandom() {
+	# Prints a number of random bytes from secure random generator.
+	# Returns non-zero if the operation fails
+	# getrandom <bytes>
+	local bytes="$1"
+	[[ $bytes -lt 0 || $bytes -gt 32768 ]] && return 1
+	if [[ "$(cat /proc/sys/kernel/random/entropy_avail)" -gt 512 ]]; then
+		dd status=none iflag=fullblock if=/dev/urandom bs="$bytes" count=1
+	else 
+		echo "Warning: low ammount of entropy. Please do something like internet surfing or copying files. This operation might take a while..." >2
+		dd status=none iflag=fullblock if=/dev/random bs="$bytes" count=1
+	fi
+	return 0
+}
 
 clip() {
 	# This base64 business is because bash cannot store binary data in a shell
@@ -318,9 +443,14 @@ cmd_usage() {
 	echo
 	cat <<-_EOF
 	Usage:
-	    $PROGRAM init [--path=subfolder,-p subfolder] gpg-id...
+	    $PROGRAM init [--path=subfolder,-p subfolder] [--lock [--force-mk-derived | --force-mk-random] | --unlock] gpg-id...
 	        Initialize new password storage and use gpg-id for encryption.
 	        Selectively reencrypt existing passwords using new gpg-id.
+            Optionally, it can lock the database: encrypt file names and git commits.
+	    $PROGRAM unlock
+	        Temporarily unlocks the store. Necessary to interact with it.
+	    $PROGRAM lock
+	        Locks the store.
 	    $PROGRAM [ls] [subfolder]
 	        List passwords.
 	    $PROGRAM find pass-names...
