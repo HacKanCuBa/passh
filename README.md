@@ -4,6 +4,8 @@ Pass is a simple password store. This fork changes a few things while trying to 
 
 Forked from https://git.zx2c4.com/password-store.
 
+**IMPORTANT NOTE**: this repo is currently deprecated as I will rewrite pass in Rust (eventually), but I have no plans on continuing with this.
+
 ## About
 
 This is a very simple password store that encrypts passwords using gpg and places the encrypted password in a directory. It can generate new passwords and keep track of old ones.
